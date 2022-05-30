@@ -1,6 +1,7 @@
 import './App.css';
-import React from 'react';
+import React, { useState } from 'react';
 import firebase from "firebase/compat/app"
+import { doc, deleteDoc } from "firebase/firestore";
 import "firebase/compat/firestore"
 import "firebase/compat/auth"
 import {useAuthState} from "react-firebase-hooks/auth"
@@ -20,11 +21,18 @@ firebase.initializeApp({
 const auth = firebase.auth();
 const firestore = firebase.firestore();
 function App() {
+  const messageRef = firestore.collection('massages')
   const [user] =useAuthState(auth)
+  const [roomId, setRoomId] = useState('')
+
+  const pull_data = (data) =>{
+    setRoomId(data)
+  }
+
   return  (
     <div className="App">
-      <Header auth = {auth}/>
-      {user ? <Chatroom auth = {auth} firestore = {firestore} firebase={firebase}/> : <SignIn auth = {auth} firebase = {firebase} />}
+      <Header func={pull_data} auth = {auth}  firestore={firestore}/>
+      {user ? <Chatroom roomId={roomId} auth = {auth} firebase={firebase} messageRef={messageRef}/> : <SignIn auth = {auth} firebase = {firebase} />}
     </div>
   );
 }

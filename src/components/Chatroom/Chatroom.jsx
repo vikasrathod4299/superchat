@@ -1,19 +1,20 @@
+
 import React, {useRef ,useState } from 'react'
 import {useCollectionData} from "react-firebase-hooks/firestore"  
-import { format } from 'timeago.js'
+// import { format } from 'timeago.js'
 import './chatroom.css'
 
 
 export const Chatroom = (props) => {
     const dummy = useRef();
-    const firestore = props.firestore
     const firebase = props.firebase
     const auth = props.auth
-    const messageRef = firestore.collection('massages')
-    const query = messageRef.orderBy('createdAt','desc').limit(25);
+    const roomId = props.roomId;
+    const messageRef = props.messageRef
+    const query = messageRef.where("roomId","==",roomId).orderBy('createdAt','desc').limit(25)
     const [messages] = useCollectionData(query, {idField:'id'})
     const [formValue, setFormValue] = useState('');
-
+    
     const sendMessage = async(e)=>{
         e.preventDefault();
         const {uid, photoURL} = auth.currentUser;
@@ -21,7 +22,8 @@ export const Chatroom = (props) => {
             text: formValue,
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
             uid,
-            photoURL
+            photoURL,
+            roomId:roomId
           })
       setFormValue('')
       dummy.current.scrollIntoView({ behavior: 'smooth' });
