@@ -19,10 +19,10 @@ export const Header = (props) => {
   const [inputs, setInputs] = useState({});
   const [roomId, setRoomId] = useState('global')
   const [error, setError] = useState();
-  const [query, setQuery] = useState();
+  const [passerr,setPassErr] = useState('')
   const roomRef = firestore.collection('rooms')
-  const [rooms] = useCollectionData(query, {idField:'id'})
-  
+  const q = inputs.roomId && roomRef.where("roomId","==",inputs.roomId)
+  const [rooms] = useCollectionData(q, {idField:'id'})
   props.func(roomId);
 
   const onChange = (e)=>{
@@ -31,71 +31,92 @@ export const Header = (props) => {
     })
   }
 
+  const handleClose = (e) => {
+    setOpen(false);
+  };
   
   const handleClickOpen = () => {
     setOpen(true);
   };
 
   const handleEnter = (e) => {
-    setRoomId(inputs.roomId)
-    setOpen(false);
+    if (rooms.length<=0){
+      setError("Room doesn't Exist...")
+    }else{
+      if (rooms[0].password == inputs.password){
+        setRoomId(inputs.roomId)
+        setOpen(false);
+      }else{
+        setPassErr("Incorrect password...")
+      }
+    }
   };
 
-  const handleClose = (e) => {
-    setOpen(false);
-  };
+  const handleExitRoom = (e)=>{
+    setRoomId('global')
+    setOpen(false)
+  }
 
   const handleCreate = async(e) => {
     e.preventDefault()
-    const q = roomRef.where("roomId","==",inputs.roomId)
-    await setQuery(q)
     
     if (rooms.length>=1){
       setError("Room Alreadey Exist...")
-      console.log(error)
     }
+
     else{
-      try{
-      await roomRef.add({
-        roomId:roomId,
+        await roomRef.add({
+        roomId:inputs.roomId,
+        password:inputs.password
       })
       setError("Room is created...")
-      console.log("room Is created")
-      console.log(error)
-    }catch(e){
-      console.log(e)
     }
-      
-    }
+
   };
 
 
   return  (
     <header className="App-header">
       <h1>🔥V Chat🔥</h1>
+      {roomId!='global'&& <h9 className="room-name">Room : {roomId}</h9>}
+        
       <div className='menu'>
         <MeetingRoom className='room' onClick={handleClickOpen}/>
         <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>Create or enter in private room.</DialogTitle>
+          <DialogTitle>Create or enter in private room.</DialogTitle>
+          <DialogContent>
+              <TextField
+                autoFocus
+                margin="dense"
+                name="roomId"
+                id="roomId"
+                label={!error ?"Room id (Room ID should be unique.)": error}
+                type="text"
+                fullWidth
+                variant="standard"
+                onChange={onChange}
+            />
+              <TextField
+                autoFocus
+                margin="dense"
+                name="password"
+                id="password"
+                label={!passerr ? "Enter Password": passerr}
+                type="password"
+                fullWidth
+                variant="standard"
+                onChange={onChange}
+              />
+            
+            </DialogContent>
 
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            name="roomId"
-            id="roomId"
-            label="Room id (Room ID should be unique.)"
-            type="text"
-            fullWidth
-            variant="standard"
-            onChange={onChange}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button type="submit" onClick={handleCreate}>Create</Button>
-          <Button type="submit" onClick={handleEnter}>Enter</Button>
-        </DialogActions>
+            <DialogActions>
+              <Button type="submit" onClick={handleExitRoom}>Public</Button>
+              <Button type="submit" onClick={handleCreate}>Create</Button>
+              <Button type="submit" onClick={handleEnter}>Enter</Button>
+            </DialogActions>
       </Dialog>
+
         { auth.currentUser && <ExitToAppOutlined onClick={()=>auth.signOut()}/>}
       </div>
     </header>

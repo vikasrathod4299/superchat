@@ -26,3 +26,12 @@ header {
   .room{
     margin-right: 20px;
   }
+
+
+  .room-name{
+      font-size: smaller;
+      /* margin-left: 50px; */
+      margin-top: 18px;
+      color: rgb(150, 0, 70);
+      font-style: italic;
+  }
