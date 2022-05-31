@@ -20,9 +20,6 @@
     "timeago.js": "^4.0.2",
     "web-vitals": "^2.1.4"
   },
-  "devDependencies": {
-    "react-scripts": "4.0.3"
-  },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
